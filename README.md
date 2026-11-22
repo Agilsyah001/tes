@@ -1,2 +1,3 @@
-# tes
+untuk tugas1.java -> buka command prompt/terminal di visual studio code -> jalan prompt nya = java tugas1.java -> terus enter, note : pastikan java sudah terinstal
 
+untuk tugas2.html -> klik 2x pada file nya otomatis masuk ke browser atau download extension 'live server by ritwick dey' di kiri pojok pada visual studio code -> lalu setelah download buka tugas2.html -> klik kanan pada halaman nya dan klik open with live server otomatis langsung dialihkan ke browser

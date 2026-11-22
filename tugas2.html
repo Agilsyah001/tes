@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Todo List</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #e8edf3; margin: 0; padding: 30px 15px; color: #222; }
+    .box { max-width: 480px; margin: 0 auto; background: white; padding: 24px; border: 1px solid #d3dae3; border-radius: 10px; }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    #info { margin: 0 0 18px; color: #777; font-size: 14px; }
+
+    .form { display: flex; gap: 8px; margin-bottom: 8px; }
+    .form input { flex: 1; min-width: 0; padding: 10px; border: 1px solid #bbb; border-radius: 6px; font-size: 15px; }
+
+    button { padding: 8px 12px; border: none; border-radius: 6px; background: #3b6fd4; color: white; font-size: 14px; cursor: pointer; }
+    button:hover { background: #2f5cb5; }
+    button.abu { background: #e3e6ea; color: #333; }
+    button.abu:hover { background: #d3d7dc; }
+    button.merah { background: #d9534f; }
+    button.merah:hover { background: #c0403c; }
+
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { display: flex; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid #eee; }
+    li span { flex: 1; overflow-wrap: anywhere; }
+    li input[type=checkbox] { width: 18px; height: 18px; }
+    li input[type=text] { flex: 1; min-width: 0; padding: 7px; border: 1px solid #3b6fd4; border-radius: 4px; font-size: 15px; }
+    li.selesai span { text-decoration: line-through; color: #999; }
+    li.kosong { justify-content: center; color: #888; border: none; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Daftar Tugas</h1>
+    <p id="info"></p>
+
+    <div class="form">
+      <input type="text" id="isi" placeholder="Tulis tugas baru...">
+      <button onclick="tambah()">Tambah</button>
+    </div>
+
+    <ul id="daftar"></ul>
+  </div>
+
+  <script>
+    let tugas = [];
+    let editIndex = -1;
+
+    try {
+      tugas = JSON.parse(localStorage.getItem("tugas")) || [];
+    } catch (e) {}
+
+    const isi = document.getElementById("isi");
+    const daftar = document.getElementById("daftar");
+    const info = document.getElementById("info");
+
+    function simpan() {
+      try {
+        localStorage.setItem("tugas", JSON.stringify(tugas));
+      } catch (e) {}
+    }
+
+    function tampil() {
+      daftar.innerHTML = "";
+
+      const jumlahSelesai = tugas.filter(function (t) { return t.selesai; }).length;
+      info.textContent = tugas.length + " tugas, " + jumlahSelesai + " selesai";
+
+      if (tugas.length === 0) {
+        daftar.innerHTML = '<li class="kosong">Belum ada tugas.</li>';
+      }
+
+      tugas.forEach(function (item, i) {
+        const li = document.createElement("li");
+        daftar.appendChild(li);
+
+        if (i === editIndex) {
+          const kolom = document.createElement("input");
+          kolom.type = "text";
+          kolom.value = item.teks;
+          kolom.onkeydown = function (e) {
+            if (e.key === "Enter") simpanEdit(i, kolom.value);
+            if (e.key === "Escape") batalEdit();
+          };
+
+          const btnSimpan = document.createElement("button");
+          btnSimpan.textContent = "Simpan";
+          btnSimpan.onclick = function () {
+            simpanEdit(i, kolom.value);
+          };
+
+          const btnBatal = document.createElement("button");
+          btnBatal.textContent = "Batal";
+          btnBatal.className = "abu";
+          btnBatal.onclick = batalEdit;
+
+          li.append(kolom, btnSimpan, btnBatal);
+          kolom.focus();
+          kolom.select();
+        } else {
+          const cek = document.createElement("input");
+          cek.type = "checkbox";
+          cek.checked = item.selesai;
+          cek.onchange = function () {
+            item.selesai = cek.checked;
+            simpan();
+            tampil();
+          };
+
+          const span = document.createElement("span");
+          span.textContent = item.teks;
+          if (item.selesai) li.className = "selesai";
+
+          const btnEdit = document.createElement("button");
+          btnEdit.textContent = "Edit";
+          btnEdit.className = "abu";
+          btnEdit.onclick = function () {
+            editIndex = i;
+            tampil();
+          };
+
+          const btnHapus = document.createElement("button");
+          btnHapus.textContent = "Hapus";
+          btnHapus.className = "merah";
+          btnHapus.onclick = function () {
+            tugas.splice(i, 1);
+            editIndex = -1;
+            simpan();
+            tampil();
+          };
+
+          li.append(cek, span, btnEdit, btnHapus);
+        }
+      });
+    }
+
+    function tambah() {
+      const teks = isi.value.trim();
+      if (teks === "") return;
+
+      tugas.push({ teks: teks, selesai: false });
+      isi.value = "";
+      simpan();
+      tampil();
+    }
+
+    function simpanEdit(i, teksBaru) {
+      teksBaru = teksBaru.trim();
+      if (teksBaru === "") return;
+
+      tugas[i].teks = teksBaru;
+      editIndex = -1;
+      simpan();
+      tampil();
+    }
+
+    function batalEdit() {
+      editIndex = -1;
+      tampil();
+    }
+    
+    isi.onkeydown = function (e) {
+      if (e.key === "Enter") tambah();
+    };
+
+    tampil();
+  </script>
+</body>
+</html>
